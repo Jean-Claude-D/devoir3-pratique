@@ -148,8 +148,8 @@ class Trainer:
         :return: A PyTorch model implementing the CNN.
         """
         # Format netconfig so it's a list of tuples, one per hidden layer
-        net_config = enumerate(zip(*net_config))
-        
+        net_config = list(enumerate(zip(*net_config)))
+
         conv_layers = []
         last_n_channel = in_channels
         for (i, config) in net_config:
