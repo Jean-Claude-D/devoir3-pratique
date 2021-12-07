@@ -37,10 +37,10 @@ def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float
     pretty_print('Result', result)
     result.backward()
     grad = list(map(lambda tensor : tensor.grad, tensor_list))
-    pretty_print('Gradient', grad)
-    norm = np.linalg.norm(grad)
-    pretty_print('Norm', norm)
-    return norm
+    pretty_print_list('Gradient', grad)
+    norms = list(map(np.linalg.norm, grad))
+    pretty_print_list('Norms', norms)
+    return norms
 
 
 def jacobian_norm(function: Callable, input_tensor: torch.Tensor) -> float:
