@@ -1,7 +1,7 @@
 import random
 import numpy as np
 import torch
-from typing import Tuple, Callable, List, NamedTuple
+from typing import Any, Tuple, Callable, List, NamedTuple
 import torchvision
 import tqdm
 
@@ -19,11 +19,26 @@ class NetworkConfiguration(NamedTuple):
     paddings: Tuple[int, ...] = (0, 0, 0)
     dense_hiddens: Tuple[int, ...] = (256, 256)
 
+def pretty_print(title: str, data : Any):
+    print(f'\n\n{title} :\n')
+    print(data)
+    print('\n\n')
+
+def pretty_print_list(title: str, list: List):
+    print(f'\n\n{title} :\n')
+    for el in list:
+        print(el)
+    print('\n\n')
 
 # Pytorch preliminaries
 def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float:
-    print(function)
-    print(tensor_list)
+    pretty_print('Function', function)
+    pretty_print_list('Tensors', tensor_list)
+    transformed_list = list(map(function, tensor_list))
+    pretty_print_list('Transformed', transformed_list)
+    norm = np.linalg.norm(transformed_list)
+    pretty_print('Norm', norm)
+    return norm
 
 
 def jacobian_norm(function: Callable, input_tensor: torch.Tensor) -> float:
