@@ -3,6 +3,7 @@ import random
 import numpy as np
 import torch
 from typing import Any, Tuple, Callable, List, NamedTuple
+from torch.autograd.functional import jacobian
 import torchvision
 import tqdm
 
@@ -47,9 +48,13 @@ def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float
     return norm
 
 def jacobian_norm(function: Callable, input_tensor: torch.Tensor) -> float:
-    # TODO WRITE CODE HERE
-    pass
+    # compute jacobian matrix and flatten it
+    jacobian_flat = jacobian(function, input_tensor).flatten().tolist()
 
+    # Frobenius norm on a matrix is just the Euclidian norm on the flattened
+    # matrix
+    norm = np.linalg.norm(jacobian_flat)
+    return norm
 
 class Trainer:
     def __init__(self,
