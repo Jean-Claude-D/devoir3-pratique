@@ -25,24 +25,6 @@ def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float
     # TODO WRITE CODE HERE
     pass
 
-tensors = [
-    torch.tensor([0, 13]),
-    torch.tensor([2, 1]),
-    torch.tensor([14, 0]),
-    torch.tensor([0, 0]),
-    torch.tensor([0, -8]),
-    torch.tensor([-9, -90]),
-    torch.tensor([-45, 0]),
-]
-
-x_tensor = torch.tensor([1, 0])
-y_tensor = torch.tensor([0, 1])
-
-fun = 3*x_tensor**2 + 4*y_tensor**3
-
-print(fun)
-print(fun())
-
 
 def jacobian_norm(function: Callable, input_tensor: torch.Tensor) -> float:
     # TODO WRITE CODE HERE
