@@ -132,7 +132,7 @@ class Trainer:
             Flatten(),
             *hidden_layers,
             Linear(last_layer_out_features, n_classes),
-            Softmax()
+            Softmax(dim = 1)
         )
 
     @staticmethod
@@ -189,7 +189,7 @@ class Trainer:
             *conv_layers,
             *conn_layers,
             Linear(last_conn_out_features, n_classes),
-            Softmax()
+            Softmax(dim = 1)
         )
 
     @staticmethod
@@ -260,7 +260,16 @@ class Trainer:
                   test: Tuple[torch.Tensor, torch.Tensor]) -> Tuple[Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor]]:
-        # TODO WRITE CODE HERE
+        print()
+        print()
+        print(train)
+        print()
+        print()
+        print()
+        print()
+        print(test)
+        print()
+        print()
         pass
 
     def test_equivariance(self):
