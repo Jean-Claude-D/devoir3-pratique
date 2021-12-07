@@ -27,6 +27,17 @@ class NetworkConfiguration(NamedTuple):
     paddings: Tuple[int, ...] = (0, 0, 0)
     dense_hiddens: Tuple[int, ...] = (256, 256)
 
+def pretty_print(title: str, data : Any):
+    print(f'\n\n{title} :\n')
+    print(data)
+    print('\n\n')
+
+def pretty_print_list(title: str, list: List):
+    print(f'\n\n{title} :\n')
+    for el in list:
+        print(el)
+    print('\n\n')
+
 # Pytorch preliminaries
 def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float:
     output = function(*tensor_list)
@@ -260,17 +271,9 @@ class Trainer:
                   test: Tuple[torch.Tensor, torch.Tensor]) -> Tuple[Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor]]:
-        print()
-        print()
-        print(train)
-        print()
-        print()
-        print()
-        print()
-        print(test)
-        print()
-        print()
-        pass
+        pretty_print_list('Train', train)
+        pretty_print_list('Valid', valid)
+        pretty_print_list('Test', test)
 
     def test_equivariance(self):
         from functools import partial
