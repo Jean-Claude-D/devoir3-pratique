@@ -3,6 +3,7 @@ import random
 import numpy as np
 import torch
 from typing import Any, Tuple, Callable, List, NamedTuple
+from torch.nn import functional
 from torch.autograd.functional import jacobian
 from torch.nn.modules.activation import Softmax
 from torch.nn.modules.container import Sequential
@@ -212,8 +213,7 @@ class Trainer:
         }[activation_str]
 
     def one_hot(self, y: torch.Tensor) -> torch.Tensor:
-        # TODO WRITE CODE HERE
-        pass
+        return functional.one_hot(y, self.n_classes)
 
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # TODO WRITE CODE HERE
@@ -271,9 +271,9 @@ class Trainer:
                   test: Tuple[torch.Tensor, torch.Tensor]) -> Tuple[Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor]]:
-        pretty_print_list('Train', train)
-        pretty_print_list('Valid', valid)
-        pretty_print_list('Test', test)
+        pretty_print_list('Train', train[0])
+        pretty_print_list('Valid', valid[0])
+        pretty_print_list('Test', test[0])
 
     def test_equivariance(self):
         from functools import partial
