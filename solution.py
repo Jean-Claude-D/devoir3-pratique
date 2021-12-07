@@ -42,7 +42,7 @@ def pretty_print_list(title: str, list: List):
 
 def clip_between(value: float, minimum: float = float('-inf'),
                  maximum: float = float('inf')):
-    pretty_print(value)
+    pretty_print('Hey', value)
     value = max(minimum, value)
     value = min(maximum, value)
 
@@ -232,6 +232,7 @@ class Trainer:
         predicted = self.network(X)
         pretty_print_list('Predicted', predicted)
         # Clip values that are too small/large
+        predicted = predicted.min
         predicted = torch.tensor([
             torch.tensor([
                 clip_between(p_val, self.epsilon, 1 - self.epsilon)
