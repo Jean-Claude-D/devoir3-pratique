@@ -6,8 +6,10 @@ from typing import Any, Tuple, Callable, List, NamedTuple
 from torch.autograd.functional import jacobian
 from torch.nn.modules.activation import Softmax
 from torch.nn.modules.container import Sequential
+from torch.nn.modules.conv import Conv2d
 from torch.nn.modules.flatten import Flatten
 from torch.nn.modules.linear import Linear
+from torch.nn.modules.pooling import AdaptiveMaxPool2d, MaxPool2d
 import torchvision
 import tqdm
 
@@ -145,8 +147,50 @@ class Trainer:
         :param activation: The activation function to use.
         :return: A PyTorch model implementing the CNN.
         """
-        # TODO write code here
-        pass
+        # Format netconfig so it's a list of tuples, one per hidden layer
+        net_config = enumerate(zip(*net_config))
+        
+        conv_layers = []
+        last_n_channel = in_channels
+        for (i, config) in net_config:
+            # unpacking the configuration for a single convolutional layer
+            n_channel, k_size, stride, pad, _ = config
+            conv_layers += [
+                Conv2d(last_n_channel, n_channel, k_size, stride, pad),
+                activation
+            ]
+
+            if i < len(net_config) - 1:
+                conv_layers.append(MaxPool2d(kernel_size=2))
+            else:
+                # pooling on last convolutional layer is different
+                conv_layers.append(AdaptiveMaxPool2d((4, 4)))
+
+            last_n_channel = n_channel
+            
+        conn_layers = [Flatten()]
+        # this is because the last pooling has size (4, 4)
+        last_conn_out_features = last_n_channel * 4 * 4
+        for (i, config) in net_config:
+            # unpacking the configuration for a single fully-connected layer
+            _, _, _, _, dense_hidden = config
+
+            conn_layers += [
+                Linear(last_conn_out_features, dense_hidden),
+                activation
+            ]
+
+            last_conn_out_features = dense_hidden
+
+        # At this point, `last_conn_out_features` contains the number of
+        # features in the last fully-connected layer. This is used as the
+        # number of input features in the last layer.
+        return Sequential(
+            *conv_layers,
+            *conn_layers,
+            Linear(last_conn_out_features, n_classes),
+            Softmax()
+        )
 
     @staticmethod
     def create_activation_function(activation_str: str) -> torch.nn.Module:
