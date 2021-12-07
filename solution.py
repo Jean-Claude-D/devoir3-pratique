@@ -130,7 +130,7 @@ class Trainer:
             Flatten(),
             *hidden_layers,
             Linear(last_layer_out_features, n_classes),
-            Softmax(dim = n_classes)
+            Softmax()
         )
 
     @staticmethod
