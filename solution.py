@@ -151,9 +151,9 @@ class Trainer:
     @staticmethod
     def create_activation_function(activation_str: str) -> torch.nn.Module:
         return {
-            'relu' : torch.nn.ReLU,
-            'tanh' : torch.nn.Tanh,
-            'sigmoid' : torch.nn.Sigmoid
+            'relu' : torch.nn.ReLU(),
+            'tanh' : torch.nn.Tanh(),
+            'sigmoid' : torch.nn.Sigmoid()
         }[activation_str]
 
     def one_hot(self, y: torch.Tensor) -> torch.Tensor:
