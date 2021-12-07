@@ -4,7 +4,6 @@ import torch
 from typing import Any, Tuple, Callable, List, NamedTuple
 import torchvision
 import tqdm
-import inspect
 
 
 # Seed all random number generators
@@ -33,14 +32,12 @@ def pretty_print_list(title: str, list: List):
 
 # Pytorch preliminaries
 def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float:
-    pretty_print('Function', inspect.getsource(function))
     pretty_print_list('Tensors', tensor_list)
-    for tensor in tensor_list:
-        pretty_print('A Tensor', tensor)
-        pretty_print('Result', function(tensor))
-    transformed_list = list(map(function, tensor_list))
-    pretty_print_list('Transformed', transformed_list)
-    norm = np.linalg.norm(transformed_list)
+    result = function(*tensor_list)
+    pretty_print('Result', result)
+    grad = result.grad_fn()
+    pretty_print('Gradient', grad)
+    norm = np.linalg.norm(grad)
     pretty_print('Norm', norm)
     return norm
 
