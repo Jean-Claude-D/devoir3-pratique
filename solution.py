@@ -117,18 +117,20 @@ class Trainer:
         last_layer_out_features = input_dim
         for dim in net_config.dense_hiddens:
             hidden_layers += [
-                Linear(in_features = last_layer_out_features,
-                    out_features = dim),
+                Linear(last_layer_out_features, dim),
                 activation
             ]
 
             last_layer_out_features = dim
         
+        # At this point, `last_layer_out_features` contains the number of
+        # features in the last hidden layer. This is used as the number of
+        # input features in the last layer.
         return Sequential(
             Flatten(),
             *hidden_layers,
-            Linear(dim = n_classes),
-            Softmax()
+            Linear(last_layer_out_features, n_classes),
+            Softmax(dim = n_classes)
         )
 
     @staticmethod
