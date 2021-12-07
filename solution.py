@@ -10,6 +10,7 @@ from torch.nn.modules.container import Sequential
 from torch.nn.modules.conv import Conv2d
 from torch.nn.modules.flatten import Flatten
 from torch.nn.modules.linear import Linear
+from torch.nn.modules.loss import CrossEntropyLoss
 from torch.nn.modules.pooling import AdaptiveMaxPool2d, MaxPool2d
 import torchvision
 import tqdm
@@ -38,6 +39,13 @@ def pretty_print_list(title: str, list: List):
     for el in list:
         print(el)
     print('\n\n')
+
+def clip_between(value: float, minimum: float = float('-inf'),
+                 maximum: float = float('inf')):
+    value = max(minimum, value)
+    value = min(maximum, value)
+
+    return value
 
 # Pytorch preliminaries
 def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float:
@@ -216,8 +224,18 @@ class Trainer:
         return functional.one_hot(y, self.n_classes)
 
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
-        # TODO WRITE CODE HERE
-        pass
+        # predictions given by network with current weights
+        predicted = self.network(X)
+        # clip small/large values
+        predicted = torch.tensor([
+            clip_between(p, self.epsilon, 1 - self.epsilon) for p in predicted
+        ])
+
+        loss = CrossEntropyLoss()
+        accuracy = 0
+
+        return (loss(predicted, y), accuracy)
+        
 
     @staticmethod
     def compute_gradient_norm(network: torch.nn.Module) -> float:
@@ -271,9 +289,9 @@ class Trainer:
                   test: Tuple[torch.Tensor, torch.Tensor]) -> Tuple[Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor]]:
-        pretty_print_list('Train', train[0])
-        pretty_print_list('Valid', valid[0])
-        pretty_print_list('Test', test[0])
+        pretty_print_list('Train', train[0][:20])
+        pretty_print_list('Valid', valid[0][:20])
+        pretty_print_list('Test', test[0][:20])
 
     def test_equivariance(self):
         from functools import partial
