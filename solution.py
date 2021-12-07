@@ -1,3 +1,4 @@
+from functools import reduce
 import random
 import numpy as np
 import torch
@@ -32,16 +33,18 @@ def pretty_print_list(title: str, list: List):
 
 # Pytorch preliminaries
 def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float:
-    pretty_print_list('Tensors', tensor_list)
-    result = function(*tensor_list)
-    pretty_print('Result', result)
-    result.backward()
-    grad = list(map(lambda tensor : tensor.grad, tensor_list))
-    pretty_print_list('Gradient', grad)
-    norms = list(map(np.linalg.norm, grad))
-    pretty_print_list('Norms', norms)
-    return norms
+    output = function(*tensor_list)
+    # trigger gradient computation
+    output.backward()
 
+    # retrieve gradient for each tensor input
+    grad = list(map(lambda ts : ts.grad.flatten().tolist(), tensor_list))
+    # flatten the gradients into 1 long list
+    grad_flat = list(reduce(lambda cumul, ts : cumul + ts, grad, []))
+
+    # euclidian norm of flat gradient
+    norm = np.linalg.norm(grad_flat)
+    return norm
 
 def jacobian_norm(function: Callable, input_tensor: torch.Tensor) -> float:
     # TODO WRITE CODE HERE
