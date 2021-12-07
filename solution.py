@@ -224,17 +224,19 @@ class Trainer:
         return functional.one_hot(y, self.n_classes)
 
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
-        # predictions given by network with current weights
+        # Predictions given by network with current weights
         predicted = self.network(X)
-        # clip small/large values
+        # Clip small/large values
         predicted = torch.tensor([
             clip_between(p, self.epsilon, 1 - self.epsilon) for p in predicted
         ])
 
-        loss = CrossEntropyLoss()
+        loss = CrossEntropyLoss(predicted, y)
+        # Trigger gradient computation
+        loss.backward()
         accuracy = 0
 
-        return (loss(predicted, y), accuracy)
+        return (loss, accuracy)
         
 
     @staticmethod
@@ -289,9 +291,12 @@ class Trainer:
                   test: Tuple[torch.Tensor, torch.Tensor]) -> Tuple[Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor]]:
-        # pretty_print('Train', train[0][0])
-        # pretty_print('Valid', valid[0][0])
-        # pretty_print('Test', test[0][0])
+        mean = torch.mean(train[0], dim=0)
+        std = torch.std(train[0], dim = 0)
+
+        pretty_print('Train', train[0][0])
+        pretty_print('Mean', mean)
+        pretty_print('Std', std)
 
         return (train, valid, test)
 
