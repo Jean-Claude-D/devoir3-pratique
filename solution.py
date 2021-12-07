@@ -289,9 +289,9 @@ class Trainer:
                   test: Tuple[torch.Tensor, torch.Tensor]) -> Tuple[Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor],
                                                                     Tuple[torch.Tensor, torch.Tensor]]:
-        pretty_print_list('Train', train[0][:20])
-        pretty_print_list('Valid', valid[0][:20])
-        pretty_print_list('Test', test[0][:20])
+        pretty_print('Train', train[0][0])
+        pretty_print('Valid', valid[0][0])
+        pretty_print('Test', test[0][0])
 
     def test_equivariance(self):
         from functools import partial
