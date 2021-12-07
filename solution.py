@@ -28,20 +28,20 @@ class NetworkConfiguration(NamedTuple):
 # Pytorch preliminaries
 def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float:
     output = function(*tensor_list)
-    # trigger gradient computation
+    # Trigger gradient computation
     output.backward()
 
-    # retrieve gradient for each tensor input
+    # Retrieve gradient for each tensor input
     grad = list(map(lambda ts : ts.grad.flatten().tolist(), tensor_list))
-    # flatten the gradients into 1 long list
+    # Flatten the gradients into 1 long list
     grad_flat = list(reduce(lambda cumul, ts : cumul + ts, grad, []))
 
-    # euclidian norm of flat gradient
+    # Euclidian norm of flat gradient
     norm = np.linalg.norm(grad_flat)
     return norm
 
 def jacobian_norm(function: Callable, input_tensor: torch.Tensor) -> float:
-    # compute jacobian matrix and flatten it
+    # Compute jacobian matrix and flatten it
     jacobian_flat = jacobian(function, input_tensor).flatten().tolist()
 
     # Frobenius norm on a matrix is just the Euclidian norm on the flattened
@@ -114,26 +114,22 @@ class Trainer:
         :return: A PyTorch model implementing the MLP.
         """
         hidden_layers = []
-        for i in range(net_config.dense_hiddens):
-            # first layer has a different number of input features
-            in_features_i = input_dim if i == 0 else 256
-
-            # each hidden layer is fully connected linear, with an activation
+        last_layer_out_features = input_dim
+        for dim in net_config.dense_hiddens:
             hidden_layers += [
-                Linear(in_features_i, 256),
+                Linear(last_layer_out_features, dim),
                 activation
             ]
+
+            last_layer_out_features = dim
         
-        # build MLP which :
-        #
-        #   1. flattens the input
-        #   2. processes the hidden layers (built on previous lines)
-        #   3. uses softmax for the final activation
-        #
+        # At this point, `last_layer_out_features` contains the number of
+        # features in the last hidden layer. This is used as the number of
+        # input features in the last layer.
         return Sequential(
             Flatten(),
             *hidden_layers,
-            Linear(256, n_classes),
+            Linear(last_layer_out_features, n_classes),
             Softmax()
         )
 
