@@ -229,9 +229,12 @@ class Trainer:
         pretty_print('y', y.stride())
         predicted = self.network(X)
         pretty_print_list('Predicted', predicted)
-        # Clip small/large values
+        # Clip values that are too small/large
         predicted = torch.tensor([
-            clip_between(p, self.epsilon, 1 - self.epsilon) for p in predicted
+            torch.tensor([
+                clip_between(p_val, self.epsilon, 1 - self.epsilon)
+                for p_val in p
+            ]) for p in predicted
         ])
 
         loss = CrossEntropyLoss(predicted, y)
