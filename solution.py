@@ -22,8 +22,8 @@ class NetworkConfiguration(NamedTuple):
 
 # Pytorch preliminaries
 def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float:
-    # TODO WRITE CODE HERE
-    pass
+    print(function)
+    print(tensor_list)
 
 
 def jacobian_norm(function: Callable, input_tensor: torch.Tensor) -> float:
