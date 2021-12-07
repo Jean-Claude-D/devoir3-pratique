@@ -35,7 +35,7 @@ def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float
     pretty_print_list('Tensors', tensor_list)
     result = function(*tensor_list)
     pretty_print('Result', result)
-    grad = result.grad_fn()
+    grad = list(map(lambda tensor : tensor.grad, tensor_list))
     pretty_print('Gradient', grad)
     norm = np.linalg.norm(grad)
     pretty_print('Norm', norm)
