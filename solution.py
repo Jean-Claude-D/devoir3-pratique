@@ -4,6 +4,10 @@ import numpy as np
 import torch
 from typing import Any, Tuple, Callable, List, NamedTuple
 from torch.autograd.functional import jacobian
+from torch.nn.modules.activation import Softmax
+from torch.nn.modules.container import Sequential
+from torch.nn.modules.flatten import Flatten
+from torch.nn.modules.linear import Linear
 import torchvision
 import tqdm
 
@@ -20,17 +24,6 @@ class NetworkConfiguration(NamedTuple):
     strides: Tuple[int, ...] = (1, 1, 1)
     paddings: Tuple[int, ...] = (0, 0, 0)
     dense_hiddens: Tuple[int, ...] = (256, 256)
-
-def pretty_print(title: str, data : Any):
-    print(f'\n\n{title} :\n')
-    print(data)
-    print('\n\n')
-
-def pretty_print_list(title: str, list: List):
-    print(f'\n\n{title} :\n')
-    for el in list:
-        print(el)
-    print('\n\n')
 
 # Pytorch preliminaries
 def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float:
@@ -120,8 +113,29 @@ class Trainer:
         :param activation: The activation function to use.
         :return: A PyTorch model implementing the MLP.
         """
-        # TODO write code here
-        pass
+        hidden_layers = []
+        for i in range(net_config.dense_hiddens):
+            # first layer has a different number of input features
+            in_features_i = input_dim if i == 0 else 256
+
+            # each hidden layer is fully connected linear, with an activation
+            hidden_layers += [
+                Linear(in_features_i, 256),
+                activation
+            ]
+        
+        # build MLP which :
+        #
+        #   1. flattens the input
+        #   2. processes the hidden layers (built on previous lines)
+        #   3. uses softmax for the final activation
+        #
+        return Sequential(
+            Flatten(),
+            *hidden_layers,
+            Linear(256, n_classes),
+            Softmax()
+        )
 
     @staticmethod
     def create_cnn(in_channels: int, net_config: NetworkConfiguration, n_classes: int,
@@ -140,8 +154,11 @@ class Trainer:
 
     @staticmethod
     def create_activation_function(activation_str: str) -> torch.nn.Module:
-        # TODO WRITE CODE HERE
-        pass
+        return {
+            'relu' : torch.nn.ReLU,
+            'tanh' : torch.nn.Tanh,
+            'sigmoid' : torch.nn.Sigmoid
+        }[activation_str]
 
     def one_hot(self, y: torch.Tensor) -> torch.Tensor:
         # TODO WRITE CODE HERE
