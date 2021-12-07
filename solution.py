@@ -225,8 +225,9 @@ class Trainer:
 
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # Predictions given by network with current weights
+        pretty_print('X', X.stride())
         predicted = self.network(X)
-        pretty_print('Predicted', predicted.stride())
+        pretty_print_list('Predicted', predicted)
         # Clip small/large values
         predicted = torch.tensor([
             clip_between(p, self.epsilon, 1 - self.epsilon) for p in predicted
