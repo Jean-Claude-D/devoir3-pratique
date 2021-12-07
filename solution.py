@@ -226,6 +226,7 @@ class Trainer:
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # Predictions given by network with current weights
         pretty_print('X', X.stride())
+        pretty_print('y', y.stride())
         predicted = self.network(X)
         pretty_print_list('Predicted', predicted)
         # Clip small/large values
@@ -236,6 +237,11 @@ class Trainer:
         loss = CrossEntropyLoss(predicted, y)
         # Trigger gradient computation
         loss.backward()
+
+        _, predicted_choice = torch.max(predicted, dim = 1)
+        pretty_print_list('Predicted Choice', predicted_choice)
+
+
         accuracy = 0
 
         return (loss, accuracy)
