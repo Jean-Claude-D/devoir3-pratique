@@ -225,7 +225,7 @@ class Trainer:
         pretty_print_list('Predictions', predictions)
 
         loss_fn = CrossEntropyLoss()
-        loss = loss_fn(predictions, y)
+        loss = loss_fn(predictions, y.float())
         # Trigger gradient computation
         loss.backward()
 
