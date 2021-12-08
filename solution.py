@@ -75,9 +75,6 @@ class Trainer:
                  batch_size: int = 128,
                  activation_name: str = "relu",
                  normalization: bool = True):
-        pretty_print('Type', network_type)
-        pretty_print('Net Config', net_config)
-        pretty_print('Classes', n_classes)
         self.train, self.valid, self.test = self.load_dataset(datapath)
         if normalization:
             self.train, self.valid, self.test = self.normalize(self.train, self.valid, self.test)
@@ -220,7 +217,6 @@ class Trainer:
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # Predictions given by network with current weights
         predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
-        pretty_print_list('Predictions', predictions)
 
         loss = cross_entropy(predictions, y.float())
         pretty_print('Loss', loss)
@@ -298,10 +294,6 @@ class Trainer:
         # Computing mean and standard deviation on train data ONLY
         mean = torch.mean(train[0], dim=0)
         std = torch.std(train[0], dim = 0)
-
-        pretty_print('Train', train[0][0].stride())
-        pretty_print('Mean', mean.stride())
-        pretty_print('Std', std.stride())
 
         return (
             (train[0].sub(mean).div(std), train[1]),
