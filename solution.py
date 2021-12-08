@@ -148,8 +148,7 @@ class Trainer:
         return Sequential(
             Flatten(),
             *hidden_layers,
-            Linear(last_layer_out_features, n_classes),
-            Softmax(dim = 1)
+            Linear(last_layer_out_features, n_classes)
         )
 
     @staticmethod
