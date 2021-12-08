@@ -225,8 +225,7 @@ class Trainer:
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # Predictions given by network with current weights, clipped to avoid
         # numerical errors
-        predictions = self.network(X).log()
-        # predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon).log()
+        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon).log()
 
         # The 'choices' tensors contain the index of the class predicted/given,
         # rather than the probability/one-hot encoding of it
@@ -234,12 +233,17 @@ class Trainer:
         y_choices = torch.argmax(y, dim = 1)
 
         # Compute cross-entropy loss
-        loss = torch.zeros(1)
-        for actual, expected in zip(predictions, y_choices):
-            loss = loss.sub(
-                torch.log(torch.exp(actual[expected]) / torch.exp(actual).sum())
-            )
-        loss = loss.div(len(X))
+        # loss = torch.zeros(1)
+        # for actual, expected in zip(predictions, y_choices):
+        #     loss = loss.sub(
+        #         torch.log(torch.exp(actual[expected]) / torch.exp(actual).sum())
+        #     )
+        # loss = loss.div(len(X))
+
+        loss_fn = NLLLoss()
+        loss = loss_fn(predictions, y_choices)
+        # Prepare for gradient computation
+        self.optimizer.zero_grad()
 
         # Compute 0-1 accuracy
         total = len(X)
@@ -260,9 +264,11 @@ class Trainer:
         return norm
 
     def training_step(self, X_batch: torch.Tensor, y_batch: torch.Tensor) -> float:
-
-        # TODO WRITE CODE HERE
-        pass
+        self.compute_loss_and_accuracy(X_batch, y_batch)
+        loss = Trainer.compute_gradient_norm(self.network)
+        self.optimizer.step()
+        
+        return loss
 
     def log_metrics(self, X_train: torch.Tensor, y_train_oh: torch.Tensor,
                     X_valid: torch.Tensor, y_valid_oh: torch.Tensor) -> None:
