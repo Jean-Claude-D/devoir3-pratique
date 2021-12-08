@@ -221,7 +221,7 @@ class Trainer:
         pretty_print('X', X.stride())
         pretty_print('y', y.stride())
         pretty_print_list('y list', y)
-        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
+        predictions = self.network(X)#.clip(self.epsilon, 1 - self.epsilon)
         pretty_print_list('Predictions', predictions)
 
         loss = CrossEntropyLoss(predictions, y)
