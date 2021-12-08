@@ -224,8 +224,8 @@ class Trainer:
 
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # Predictions given by network with current weights
-        predictions = self.network(X)#.clip(self.epsilon, 1 - self.epsilon)
-        pretty_print('Epsilon', self.epsilon)
+        pretty_print('X len', len(X))
+        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
         pretty_print_list('Predictions', predictions)
         pretty_print_list('Ys', y)
 
@@ -234,9 +234,14 @@ class Trainer:
         prediction_choices = torch.argmax(predictions, dim = 1)
         pretty_print_list('Prediction Choices', prediction_choices)
 
-        loss_fn = nn.NLLLoss()
-        loss = loss_fn(predictions, y_choices)
+        loss = 0
+        for actual, expected in zip(predictions, y_choices):
+            loss += torch.log(torch.exp(actual[expected]) / torch.exp(actual).sum())
         pretty_print('Loss', loss)
+
+        # loss_fn = nn.NLLLoss()
+        # loss = loss_fn(predictions, y_choices)
+        # pretty_print('Loss', loss)
 
         total = len(X)
         correct = (prediction_choices == y_choices).int().sum()
