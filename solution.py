@@ -235,8 +235,10 @@ class Trainer:
         # Compute cross-entropy loss
         loss = 0
         for actual, expected in zip(predictions, y_choices):
-            loss -= torch.log(torch.exp(actual[expected]) / torch.exp(actual).sum())
-        loss /= len(X)
+            loss = loss.sub(
+                torch.log(torch.exp(actual[expected]) / torch.exp(actual).sum())
+            )
+        loss = loss.div(len(X))
 
         # Compute 0-1 accuracy
         total = len(X)
