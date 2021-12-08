@@ -218,6 +218,8 @@ class Trainer:
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # Predictions given by network with current weights
         predictions = self.network(X).log().clip(self.epsilon, 1 - self.epsilon)
+        pretty_print_list('Predictions', predictions)
+        pretty_print_list('Ys', y)
 
         loss_fn = nn.NLLLoss()
         loss = loss_fn(predictions, y.float())
