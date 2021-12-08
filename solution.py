@@ -3,6 +3,7 @@ import random
 import numpy as np
 import torch
 from typing import Any, Tuple, Callable, List, NamedTuple
+from torch import nn
 from torch.nn import functional
 from torch.autograd.functional import jacobian
 from torch.nn.modules.activation import LogSoftmax, Softmax
@@ -216,17 +217,15 @@ class Trainer:
 
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # Predictions given by network with current weights
-        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
+        predictions = self.network(X).log().clip(self.epsilon, 1 - self.epsilon)
 
-        loss = cross_entropy(predictions, y.float())
+        loss_fn = nn.NLLLoss()
+        loss = loss_fn(predictions, y.float())
         pretty_print('Loss', loss)
-        # Trigger gradient computation
-        loss.backward(retain_graph=True)
 
-        y_choices = torch.argmax(y)
+        y_choices = torch.argmax(y, dim = 1)
         pretty_print_list('Y Choices', y_choices)
-        
-        prediction_choices = torch.argmax(predictions)
+        prediction_choices = torch.argmax(predictions, dim = 1)
         pretty_print_list('Prediction Choices', prediction_choices)
 
         total = len(X)
