@@ -219,10 +219,6 @@ class Trainer:
 
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # Predictions given by network with current weights
-        pretty_print('X', X.stride())
-        pretty_print('y', y.stride())
-        pretty_print_list('y list', y)
-        pretty_print_list('Module', self.network.named_modules(remove_duplicate=False))
         predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
         pretty_print_list('Predictions', predictions)
 
@@ -231,18 +227,13 @@ class Trainer:
         # Trigger gradient computation
         loss.backward(retain_graph=True)
 
-        _, prediction_choices = torch.max(predictions, dim = 1)
+        prediction_choices = torch.argmax(predictions)
         pretty_print_list('Prediction Choices', prediction_choices)
-        _, y_choices = torch.max(y, dim = 1)
+        y_choices = torch.argmax(y)
         pretty_print_list('Y Choices', y_choices)
 
-        total = correct = 0
-        for actual, expected in zip(prediction_choices, y_choices):
-            total += 1
-
-            if actual == expected:
-                correct += 1
-        
+        total = len(X)
+        correct = (prediction_choices == y_choices).int().sum()
         accuracy = correct / total
         pretty_print('Accuracy', accuracy)
 
