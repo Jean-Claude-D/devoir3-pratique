@@ -10,7 +10,7 @@ from torch.nn.modules.container import Sequential
 from torch.nn.modules.conv import Conv2d
 from torch.nn.modules.flatten import Flatten
 from torch.nn.modules.linear import Linear
-from torch.nn import CrossEntropyLoss
+from torch.nn.functional import cross_entropy
 from torch.nn.modules.loss import NLLLoss
 from torch.nn.modules.pooling import AdaptiveMaxPool2d, MaxPool2d
 import torchvision
@@ -149,7 +149,7 @@ class Trainer:
             Flatten(),
             *hidden_layers,
             Linear(last_layer_out_features, n_classes),
-            LogSoftmax(dim = 1)
+            Softmax(dim = 1)
         )
 
     @staticmethod
@@ -222,11 +222,10 @@ class Trainer:
         pretty_print('X', X.stride())
         pretty_print('y', y.stride())
         pretty_print_list('y list', y)
-        predictions = self.network(X).log().clip(self.epsilon, 1 - self.epsilon)
+        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
         pretty_print_list('Predictions', predictions)
 
-        loss_fn = NLLLoss()
-        loss = loss_fn(predictions, y.float())
+        loss = cross_entropy(predictions, y.float())
         pretty_print('Loss', loss)
         # Trigger gradient computation
         loss.backward()
