@@ -237,7 +237,7 @@ class Trainer:
         # Compute cross-entropy loss
         loss_fn = NLLLoss()
         loss = loss_fn(predictions, y_choices)
-        loss.backward()
+        loss.backward(retain_graph=True)
 
         # Compute 0-1 accuracy
         total = len(X)
@@ -299,7 +299,8 @@ class Trainer:
         return self.train_logs
 
     def evaluate(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
-        a = self.compute_loss_and_accuracy(X, y)
+        y_one_hot = self.one_hot(y)
+        a = self.compute_loss_and_accuracy(X, y_one_hot)
         return a
 
     @staticmethod
