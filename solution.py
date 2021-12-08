@@ -228,16 +228,17 @@ class Trainer:
 
         # The 'choices' tensors contain the index of the class predicted/given,
         # rather than the probability/one-hot encoding of it
-        print('a')
         prediction_choices = torch.argmax(predictions, dim = 1)
-        print('b')
         y_choices = torch.argmax(y, dim = 1)
-        print('c')
 
         # Compute cross-entropy loss
         loss_fn = NLLLoss()
         loss = loss_fn(predictions, y_choices)
+        
+        # Prepare for gradient computation
+        self.optimizer.zero_grad()
         loss.backward(retain_graph=True)
+        self.optimizer.step()
 
         # Compute 0-1 accuracy
         total = len(X)
@@ -258,10 +259,7 @@ class Trainer:
         return norm
 
     def training_step(self, X_batch: torch.Tensor, y_batch: torch.Tensor) -> float:
-        # Prepare for gradient computation
-        self.optimizer.zero_grad()
         self.compute_loss_and_accuracy(X_batch, y_batch)
-        self.optimizer.step()
 
         loss = Trainer.compute_gradient_norm(self.network)
         
@@ -300,8 +298,11 @@ class Trainer:
 
     def evaluate(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         y_one_hot = self.one_hot(y)
-        a = self.compute_loss_and_accuracy(X, y_one_hot)
-        return a
+
+        loss, accuracy = self.compute_loss_and_accuracy(X, y_one_hot)
+        loss = loss.tensor.detach()
+        
+        return (loss, accuracy)
 
     @staticmethod
     def normalize(train: Tuple[torch.Tensor, torch.Tensor],
