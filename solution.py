@@ -234,7 +234,7 @@ class Trainer:
         # Compute cross-entropy loss
         loss_fn = NLLLoss()
         loss = loss_fn(predictions, y_choices)
-        
+
         # Prepare for gradient computation
         self.optimizer.zero_grad()
         loss.backward(retain_graph=True)
@@ -300,7 +300,7 @@ class Trainer:
         y_one_hot = self.one_hot(y)
 
         loss, accuracy = self.compute_loss_and_accuracy(X, y_one_hot)
-        loss = loss.tensor.detach()
+        loss = loss.detach()
         
         return (loss, accuracy)
 
