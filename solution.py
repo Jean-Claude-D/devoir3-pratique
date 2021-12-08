@@ -225,7 +225,8 @@ class Trainer:
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # Predictions given by network with current weights, clipped to avoid
         # numerical errors
-        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon).log()
+        predictions = self.network(X).log()
+        # predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon).log()
 
         # The 'choices' tensors contain the index of the class predicted/given,
         # rather than the probability/one-hot encoding of it
@@ -259,6 +260,7 @@ class Trainer:
         return norm
 
     def training_step(self, X_batch: torch.Tensor, y_batch: torch.Tensor) -> float:
+
         # TODO WRITE CODE HERE
         pass
 
