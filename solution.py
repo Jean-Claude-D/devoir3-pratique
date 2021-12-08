@@ -236,7 +236,6 @@ class Trainer:
         loss = loss_fn(predictions, y_choices)
         # Prepare for gradient computation
         self.optimizer.zero_grad()
-        loss.backward(retain_graph=True)
 
         # Compute 0-1 accuracy
         total = len(X)
@@ -258,9 +257,8 @@ class Trainer:
 
     def training_step(self, X_batch: torch.Tensor, y_batch: torch.Tensor) -> float:
         self.compute_loss_and_accuracy(X_batch, y_batch)
-        loss = Trainer.compute_gradient_norm(self.network)
-
         self.optimizer.step()
+        loss = Trainer.compute_gradient_norm(self.network)
         
         return loss
 
@@ -296,7 +294,10 @@ class Trainer:
         return self.train_logs
 
     def evaluate(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
-        return self.compute_loss_and_accuracy(X, y)
+        print('a')
+        a = self.compute_loss_and_accuracy(X, y)
+        print('b')
+        return a
 
     @staticmethod
     def normalize(train: Tuple[torch.Tensor, torch.Tensor],
