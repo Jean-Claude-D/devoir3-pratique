@@ -148,7 +148,8 @@ class Trainer:
         return Sequential(
             Flatten(),
             *hidden_layers,
-            Linear(last_layer_out_features, n_classes)
+            Linear(last_layer_out_features, n_classes),
+            Softmax(dim = 1)
         )
 
     @staticmethod
@@ -221,6 +222,7 @@ class Trainer:
         pretty_print('X', X.stride())
         pretty_print('y', y.stride())
         pretty_print_list('y list', y)
+        pretty_print_list('Module', self.network.named_modules())
         predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
         pretty_print_list('Predictions', predictions)
 
@@ -249,10 +251,13 @@ class Trainer:
 
     @staticmethod
     def compute_gradient_norm(network: torch.nn.Module) -> float:
-        # TODO WRITE CODE HERE
-        # Compute the Euclidean norm of the gradients of the parameters of the network
-        # with respect to the loss function.
-        pass
+        gradients = [p.grad.flatten().tolist() for p in network.parameters()]
+        # Flatten the gradients into 1 long list
+        grad_flat = list(reduce(lambda cumul, ts : cumul + ts, gradients, []))
+        
+        # Euclidian norm of flat gradient
+        norm = np.linalg.norm(grad_flat)
+        return norm
 
     def training_step(self, X_batch: torch.Tensor, y_batch: torch.Tensor) -> float:
         # TODO WRITE CODE HERE
