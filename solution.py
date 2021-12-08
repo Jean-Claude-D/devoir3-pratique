@@ -226,6 +226,7 @@ class Trainer:
 
         loss_fn = CrossEntropyLoss()
         loss = loss_fn(predictions, y.float())
+        pretty_print_list('Loss', loss)
         # Trigger gradient computation
         loss.backward()
 
@@ -240,8 +241,11 @@ class Trainer:
 
             if actual == expected:
                 correct += 1
+        
+        accuracy = correct / total
+        pretty_print_list('Accuracy', accuracy)
 
-        return (loss, correct / total)
+        return (loss, accuracy)
         
 
     @staticmethod
