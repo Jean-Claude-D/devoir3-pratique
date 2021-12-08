@@ -17,6 +17,13 @@ from torch.nn.modules.pooling import AdaptiveMaxPool2d, MaxPool2d
 import torchvision
 import tqdm
 
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+    use_cuda = True
+else:
+    device = torch.device("cpu")
+    use_cuda = False
+
 
 # Seed all random number generators
 np.random.seed(197331)
@@ -148,7 +155,7 @@ class Trainer:
             *hidden_layers,
             Linear(last_layer_out_features, n_classes),
             Softmax(dim = 1)
-        )
+        ).to(device)
 
     @staticmethod
     def create_cnn(in_channels: int, net_config: NetworkConfiguration, n_classes: int,
@@ -202,7 +209,7 @@ class Trainer:
             *conn_layers,
             Linear(last_conn_out_features, n_classes),
             Softmax(dim = 1)
-        )
+        ).to(device)
 
     @staticmethod
     def create_activation_function(activation_str: str) -> torch.nn.Module:
@@ -217,18 +224,19 @@ class Trainer:
 
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
         # Predictions given by network with current weights
-        predictions = self.network(X).log().clip(self.epsilon, 1 - self.epsilon)
+        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
+        pretty_print('Epsilon', self.epsilon)
         pretty_print_list('Predictions', predictions)
         pretty_print_list('Ys', y)
-
-        loss_fn = nn.NLLLoss()
-        loss = loss_fn(predictions, y.float())
-        pretty_print('Loss', loss)
 
         y_choices = torch.argmax(y, dim = 1)
         pretty_print_list('Y Choices', y_choices)
         prediction_choices = torch.argmax(predictions, dim = 1)
         pretty_print_list('Prediction Choices', prediction_choices)
+
+        loss_fn = nn.NLLLoss()
+        loss = loss_fn(predictions, y_choices)
+        pretty_print('Loss', loss)
 
         total = len(X)
         correct = (prediction_choices == y_choices).int().sum()
