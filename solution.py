@@ -45,7 +45,7 @@ def pretty_print_list(title: str, list: List):
 def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float:
     output = function(*tensor_list)
     # Trigger gradient computation
-    output.backward()
+    output.backward(retain_graph=True)
 
     # Retrieve gradient for each tensor input
     grad = list(map(lambda ts : ts.grad.flatten().tolist(), tensor_list))
@@ -165,7 +165,7 @@ class Trainer:
         :return: A PyTorch model implementing the CNN.
         """
         # Format netconfig so it's a list of tuples, one per hidden layer
-        net_config_zip = list(enumerate(zip(*net_config)))
+        net_config_zip = list(enumerate(zip(*net_config[:-1])))
 
         conv_layers = []
         last_n_channel = in_channels
@@ -222,14 +222,14 @@ class Trainer:
         pretty_print('X', X.stride())
         pretty_print('y', y.stride())
         pretty_print_list('y list', y)
-        pretty_print_list('Module', self.network.named_modules())
+        pretty_print_list('Module', self.network.named_modules(remove_duplicate=False))
         predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
         pretty_print_list('Predictions', predictions)
 
         loss = cross_entropy(predictions, y.float())
         pretty_print('Loss', loss)
         # Trigger gradient computation
-        loss.backward()
+        loss.backward(retain_graph=True)
 
         _, prediction_choices = torch.max(predictions, dim = 1)
         pretty_print_list('Prediction Choices', prediction_choices)
@@ -254,7 +254,7 @@ class Trainer:
         gradients = [p.grad.flatten().tolist() for p in network.parameters()]
         # Flatten the gradients into 1 long list
         grad_flat = list(reduce(lambda cumul, ts : cumul + ts, gradients, []))
-        
+
         # Euclidian norm of flat gradient
         norm = np.linalg.norm(grad_flat)
         return norm
