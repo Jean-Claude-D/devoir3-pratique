@@ -40,14 +40,6 @@ def pretty_print_list(title: str, list: List):
         print(el)
     print('\n\n')
 
-def clip_between(value: float, minimum: float = float('-inf'),
-                 maximum: float = float('inf')):
-    pretty_print('Hey', value)
-    value = max(minimum, value)
-    value = min(maximum, value)
-
-    return value
-
 # Pytorch preliminaries
 def gradient_norm(function: Callable, *tensor_list: List[torch.Tensor]) -> float:
     output = function(*tensor_list)
@@ -229,28 +221,26 @@ class Trainer:
         pretty_print('X', X.stride())
         pretty_print('y', y.stride())
         pretty_print_list('y list', y)
-        predicted = self.network(X)
-        pretty_print_list('Predicted', predicted)
-        # Clip values that are too small/large
-        predicted = predicted.min
-        predicted = torch.tensor([
-            torch.tensor([
-                clip_between(p_val, self.epsilon, 1 - self.epsilon)
-                for p_val in p
-            ]) for p in predicted
-        ])
+        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
+        pretty_print_list('Predictions', predictions)
 
-        loss = CrossEntropyLoss(predicted, y)
+        loss = CrossEntropyLoss(predictions, y)
         # Trigger gradient computation
         loss.backward()
 
-        _, predicted_choice = torch.max(predicted, dim = 1)
-        pretty_print_list('Predicted Choice', predicted_choice)
+        _, prediction_choices = torch.max(predictions, dim = 1)
+        pretty_print_list('Prediction Choices', prediction_choices)
+        _, y_choices = torch.max(y, dim = 1)
+        pretty_print_list('Y Choices', y_choices)
 
+        total = correct = 0
+        for actual, expected in zip(prediction_choices, y_choices):
+            total += 1
 
-        accuracy = 0
+            if actual == expected:
+                correct += 1
 
-        return (loss, accuracy)
+        return (loss, correct / total)
         
 
     @staticmethod
