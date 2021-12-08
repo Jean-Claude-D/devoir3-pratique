@@ -223,31 +223,26 @@ class Trainer:
         return functional.one_hot(y, self.n_classes)
 
     def compute_loss_and_accuracy(self, X: torch.Tensor, y: torch.Tensor) -> Tuple[torch.Tensor, float]:
-        # Predictions given by network with current weights
-        pretty_print('X len', len(X))
-        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
-        pretty_print_list('Predictions', predictions)
-        pretty_print_list('Ys', y)
+        # Predictions given by network with current weights, clipped to avoid
+        # numerical errors
+        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon).log()
 
-        y_choices = torch.argmax(y, dim = 1)
-        pretty_print_list('Y Choices', y_choices)
+        # The 'choices' tensors contain the index of the class predicted/given,
+        # rather than the probability/one-hot encoding of it
         prediction_choices = torch.argmax(predictions, dim = 1)
-        pretty_print_list('Prediction Choices', prediction_choices)
+        y_choices = torch.argmax(y, dim = 1)
 
+        # Compute cross-entropy loss
         loss = 0
-        for actual, expected in zip(predictions.log(), y_choices):
-            loss += torch.log(torch.exp(actual[expected]) / torch.exp(actual).sum())
+        for actual, expected in zip(predictions, y_choices):
+            loss -= torch.log(torch.exp(actual[expected]) / torch.exp(actual).sum())
         loss /= len(X)
-        pretty_print('Loss', loss)
+        loss.backward()
 
-        # loss_fn = nn.NLLLoss()
-        # loss = loss_fn(predictions, y_choices)
-        # pretty_print('Loss', loss)
-
+        # Compute 0-1 accuracy
         total = len(X)
         correct = (prediction_choices == y_choices).int().sum()
         accuracy = correct / total
-        pretty_print('Accuracy', accuracy)
 
         return (loss, accuracy)
         
