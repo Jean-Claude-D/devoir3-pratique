@@ -6,12 +6,11 @@ from typing import Any, Tuple, Callable, List, NamedTuple
 from torch import nn
 from torch.nn import functional
 from torch.autograd.functional import jacobian
-from torch.nn.modules.activation import LogSoftmax, Softmax
+from torch.nn.modules.activation import Softmax
 from torch.nn.modules.container import Sequential
 from torch.nn.modules.conv import Conv2d
 from torch.nn.modules.flatten import Flatten
 from torch.nn.modules.linear import Linear
-from torch.nn.functional import cross_entropy
 from torch.nn.modules.loss import NLLLoss
 from torch.nn.modules.pooling import AdaptiveMaxPool2d, MaxPool2d
 import torchvision
@@ -233,17 +232,11 @@ class Trainer:
         y_choices = torch.argmax(y, dim = 1)
 
         # Compute cross-entropy loss
-        # loss = torch.zeros(1)
-        # for actual, expected in zip(predictions, y_choices):
-        #     loss = loss.sub(
-        #         torch.log(torch.exp(actual[expected]) / torch.exp(actual).sum())
-        #     )
-        # loss = loss.div(len(X))
-
         loss_fn = NLLLoss()
         loss = loss_fn(predictions, y_choices)
         # Prepare for gradient computation
         self.optimizer.zero_grad()
+        loss.backward()
 
         # Compute 0-1 accuracy
         total = len(X)
@@ -266,6 +259,7 @@ class Trainer:
     def training_step(self, X_batch: torch.Tensor, y_batch: torch.Tensor) -> float:
         self.compute_loss_and_accuracy(X_batch, y_batch)
         loss = Trainer.compute_gradient_norm(self.network)
+        
         self.optimizer.step()
         
         return loss
