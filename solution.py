@@ -168,7 +168,7 @@ class Trainer:
         last_n_channel = in_channels
         for (i, config) in net_config_zip:
             # unpacking the configuration for a single convolutional layer
-            n_channel, k_size, stride, pad, _ = config
+            n_channel, k_size, stride, pad = config
             conv_layers += [
                 Conv2d(last_n_channel, n_channel, k_size, stride, pad),
                 activation
@@ -223,10 +223,11 @@ class Trainer:
         # Trigger gradient computation
         loss.backward(retain_graph=True)
 
-        prediction_choices = torch.argmax(predictions)
-        pretty_print_list('Prediction Choices', prediction_choices)
         y_choices = torch.argmax(y)
         pretty_print_list('Y Choices', y_choices)
+        
+        prediction_choices = torch.argmax(predictions)
+        pretty_print_list('Prediction Choices', prediction_choices)
 
         total = len(X)
         correct = (prediction_choices == y_choices).int().sum()
