@@ -10,7 +10,8 @@ from torch.nn.modules.container import Sequential
 from torch.nn.modules.conv import Conv2d
 from torch.nn.modules.flatten import Flatten
 from torch.nn.modules.linear import Linear
-from torch.nn.modules.loss import CrossEntropyLoss
+from torch.nn import CrossEntropyLoss
+from torch.nn.modules.loss import NLLLoss
 from torch.nn.modules.pooling import AdaptiveMaxPool2d, MaxPool2d
 import torchvision
 import tqdm
@@ -227,8 +228,8 @@ class Trainer:
         predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
         pretty_print_list('Predictions', predictions)
 
-        loss_fn = CrossEntropyLoss()
-        loss = loss_fn(predictions, y.float())
+        loss_fn = NLLLoss()
+        loss = loss_fn(predictions.log(), y.float())
         pretty_print('Loss', loss)
         # Trigger gradient computation
         loss.backward()
@@ -245,7 +246,7 @@ class Trainer:
             if actual == expected:
                 correct += 1
         
-        accuracy = (correct / total) + 0.55
+        accuracy = correct / total
         pretty_print('Accuracy', accuracy)
 
         return (loss, accuracy)
