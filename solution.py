@@ -5,7 +5,7 @@ import torch
 from typing import Any, Tuple, Callable, List, NamedTuple
 from torch.nn import functional
 from torch.autograd.functional import jacobian
-from torch.nn.modules.activation import Softmax
+from torch.nn.modules.activation import LogSoftmax, Softmax
 from torch.nn.modules.container import Sequential
 from torch.nn.modules.conv import Conv2d
 from torch.nn.modules.flatten import Flatten
@@ -149,7 +149,7 @@ class Trainer:
             Flatten(),
             *hidden_layers,
             Linear(last_layer_out_features, n_classes),
-            Softmax(dim = 1)
+            LogSoftmax(dim = 1)
         )
 
     @staticmethod
@@ -165,11 +165,11 @@ class Trainer:
         :return: A PyTorch model implementing the CNN.
         """
         # Format netconfig so it's a list of tuples, one per hidden layer
-        net_config = list(enumerate(zip(*net_config)))
+        net_config_zip = list(enumerate(zip(*net_config)))
 
         conv_layers = []
         last_n_channel = in_channels
-        for (i, config) in net_config:
+        for (i, config) in net_config_zip:
             # unpacking the configuration for a single convolutional layer
             n_channel, k_size, stride, pad, _ = config
             conv_layers += [
@@ -177,7 +177,7 @@ class Trainer:
                 activation
             ]
 
-            if i < len(net_config) - 1:
+            if i < len(net_config_zip) - 1:
                 conv_layers.append(MaxPool2d(kernel_size=2))
             else:
                 # pooling on last convolutional layer is different
@@ -188,16 +188,13 @@ class Trainer:
         conn_layers = [Flatten()]
         # this is because the last pooling has size (4, 4)
         last_conn_out_features = last_n_channel * 4 * 4
-        for (i, config) in net_config:
-            # unpacking the configuration for a single fully-connected layer
-            _, _, _, _, dense_hidden = config
-
+        for dim in net_config.dense_hiddens:
             conn_layers += [
-                Linear(last_conn_out_features, dense_hidden),
+                Linear(last_conn_out_features, dim),
                 activation
             ]
 
-            last_conn_out_features = dense_hidden
+            last_conn_out_features = dim
 
         # At this point, `last_conn_out_features` contains the number of
         # features in the last fully-connected layer. This is used as the
@@ -225,11 +222,11 @@ class Trainer:
         pretty_print('X', X.stride())
         pretty_print('y', y.stride())
         pretty_print_list('y list', y)
-        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
+        predictions = self.network(X).log().clip(self.epsilon, 1 - self.epsilon)
         pretty_print_list('Predictions', predictions)
 
         loss_fn = NLLLoss()
-        loss = loss_fn(predictions.log(), y.float())
+        loss = loss_fn(predictions, y.float())
         pretty_print('Loss', loss)
         # Trigger gradient computation
         loss.backward()
