@@ -237,7 +237,6 @@ class Trainer:
         for actual, expected in zip(predictions, y_choices):
             loss -= torch.log(torch.exp(actual[expected]) / torch.exp(actual).sum())
         loss /= len(X)
-        loss.backward()
 
         # Compute 0-1 accuracy
         total = len(X)
