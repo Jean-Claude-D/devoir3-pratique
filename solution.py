@@ -74,6 +74,9 @@ class Trainer:
                  batch_size: int = 128,
                  activation_name: str = "relu",
                  normalization: bool = True):
+        pretty_print('Type', network_type)
+        pretty_print('Net Config', net_config)
+        pretty_print('Classes', n_classes)
         self.train, self.valid, self.test = self.load_dataset(datapath)
         if normalization:
             self.train, self.valid, self.test = self.normalize(self.train, self.valid, self.test)
@@ -221,7 +224,7 @@ class Trainer:
         pretty_print('X', X.stride())
         pretty_print('y', y.stride())
         pretty_print_list('y list', y)
-        predictions = self.network(X)#.clip(self.epsilon, 1 - self.epsilon)
+        predictions = self.network(X).clip(self.epsilon, 1 - self.epsilon)
         pretty_print_list('Predictions', predictions)
 
         loss_fn = CrossEntropyLoss()
