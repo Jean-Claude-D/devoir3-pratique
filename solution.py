@@ -233,7 +233,7 @@ class Trainer:
         y_choices = torch.argmax(y, dim = 1)
 
         # Compute cross-entropy loss
-        loss = 0
+        loss = torch.zeros(1)
         for actual, expected in zip(predictions, y_choices):
             loss = loss.sub(
                 torch.log(torch.exp(actual[expected]) / torch.exp(actual).sum())
